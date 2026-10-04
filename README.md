@@ -12,6 +12,7 @@ python scaffold.py
 
 - [x] **1.** rnn_forward
 - [x] **2.** gradient_vs_lag
+- [x] **3.** carousel
 
 ---
 

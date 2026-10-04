@@ -105,3 +105,59 @@ def half_life(rate):
         return math.log(0.5) / rate
     return math.inf
 
+# Step 3 - carousel
+import torch
+
+def carousel_forward(U):
+    # TODO: cumulative sum of U along time
+
+    B, T, h = U.shape
+
+    c = torch.zeros(B, h, device=U.device, dtype=U.dtype)
+    states = []
+
+    for t in range(T):
+        u_t = U[:, t, :]
+        c = c + u_t
+        states.append(c)
+
+    states = torch.stack(states, dim=1)
+
+    return states
+
+
+def carousel_gain(T, h, lag):
+    # TODO: random U (1, T, h) with grad;
+    # backprop sum of c_{T-1};
+    # return grad at step T-1-lag, batch 0
+
+    U = torch.randn(1, T, h, requires_grad=True)
+
+    states = carousel_forward(U)
+
+    last_state = states[:, -1, :]
+
+    loss = last_state.sum()
+
+    grad = torch.autograd.grad(loss, U)[0]
+
+    t = T - 1 - lag
+
+    gain = grad[0, t, :]
+
+    return gain
+
+
+def is_constant_error(T, h):
+    # TODO: every lag's gain equals ones
+
+    for lag in range(T):
+        gain = carousel_gain(T, h, lag)
+
+        ones = torch.ones(h)
+
+        if not torch.equal(gain, ones):
+            return False
+
+    return True
+
